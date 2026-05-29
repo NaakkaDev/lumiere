@@ -12,7 +12,7 @@ local lumiere = {
 	effects = {},
 	predicate = nil,
 	timestamp = 0,
-	clear_options = {[render.BUFFER_COLOR_BIT] = clear_color, [render.BUFFER_DEPTH_BIT] = 1}
+	clear_options = {[graphics.BUFFER_TYPE_COLOR0_BIT] = clear_color, [graphics.BUFFER_TYPE_DEPTH_BIT] = 1}
 }
 
 function M.time()
@@ -41,22 +41,22 @@ local function create_render_targets(width, height)
 		render.delete_render_target(lumiere.rt2)
 	end
 		
-	local color_params = { format = render.FORMAT_RGBA,
+	local color_params = { format = graphics.TEXTURE_FORMAT_RGBA,
 		width = width,
 		height = height,
-		min_filter = render.FILTER_LINEAR,
-		mag_filter = render.FILTER_LINEAR,
-		u_wrap = render.WRAP_CLAMP_TO_EDGE,
-		v_wrap = render.WRAP_CLAMP_TO_EDGE }
+		min_filter = graphics.TEXTURE_FILTER_LINEAR,
+		mag_filter = graphics.TEXTURE_FILTER_LINEAR,
+		u_wrap = graphics.TEXTURE_WRAP_CLAMP_TO_EDGE,
+		v_wrap = graphics.TEXTURE_WRAP_CLAMP_TO_EDGE }
 
-	local depth_params = { format = render.FORMAT_DEPTH,
+	local depth_params = { format = graphics.TEXTURE_FORMAT_DEPTH,
 		width = width,
 		height = height,
-		u_wrap = render.WRAP_CLAMP_TO_EDGE,
-		v_wrap = render.WRAP_CLAMP_TO_EDGE }
+		u_wrap = graphics.TEXTURE_WRAP_CLAMP_TO_EDGE,
+		v_wrap = graphics.TEXTURE_WRAP_CLAMP_TO_EDGE }
 
-	lumiere.rt1 = render.render_target({[render.BUFFER_COLOR_BIT] = color_params, [render.BUFFER_DEPTH_BIT] = depth_params })
-	lumiere.rt2 = render.render_target({[render.BUFFER_COLOR_BIT] = color_params, [render.BUFFER_DEPTH_BIT] = depth_params })
+	lumiere.rt1 = render.render_target({[graphics.BUFFER_TYPE_COLOR0_BIT] = color_params, [graphics.BUFFER_TYPE_DEPTH_BIT] = depth_params })
+	lumiere.rt2 = render.render_target({[graphics.BUFFER_TYPE_COLOR0_BIT] = color_params, [graphics.BUFFER_TYPE_DEPTH_BIT] = depth_params })
 end
 
 local function iterate_effects(fn)
@@ -93,10 +93,10 @@ function M.init()
 	resolution.y = height
 	create_render_targets(width, height)
 
-	clear_color.x = sys.get_config("render.clear_color_red", 0)
-	clear_color.y = sys.get_config("render.clear_color_green", 0)
-	clear_color.z = sys.get_config("render.clear_color_blue", 0)
-	clear_color.w = sys.get_config("render.clear_color_alpha", 0)
+	clear_color.x = sys.get_config_number("render.clear_color_red", 0)
+	clear_color.y = sys.get_config_number("render.clear_color_green", 0)
+	clear_color.z = sys.get_config_number("render.clear_color_blue", 0)
+	clear_color.w = sys.get_config_number("render.clear_color_alpha", 0)
 end
 
 function M.final()
@@ -183,7 +183,7 @@ function M.draw(fn)
 	end)
 
 	-- draw final result
-	render.enable_texture(0, output, render.BUFFER_COLOR_BIT)
+	render.enable_texture(0, output, graphics.BUFFER_TYPE_COLOR0_BIT)
 	render.set_view(IDENTITY)
 	render.set_projection(IDENTITY)
 	render.draw(lumiere.predicate)
@@ -193,7 +193,7 @@ end
 function M.on_message(message_id, message, sender)
 	if message_id == hash("clear_color") then
 		clear_color = message.color
-		lumiere.clear_options[render.BUFFER_COLOR_BIT] = message.color
+		lumiere.clear_options[graphics.BUFFER_TYPE_COLOR0_BIT] = message.color
 	end
 end
 
